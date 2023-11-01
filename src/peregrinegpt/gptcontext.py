@@ -14,10 +14,10 @@ class GPTContext:
         with open(promptFile, "r") as fp:
             self.Messages = json.load(fp)
 
-    def Save(self, promptFile: str = "prompts.json"): 
+    def Save(self, promptFile: str = "prompts.json") -> bool: 
         try:
             with open(promptFile, "w") as fp:
-                json.dump(self.Messages, fp)
+                json.dump(self.Messages, fp, indent=2)
                 
         except:
             print("An error occured in saving messages.")
@@ -25,9 +25,11 @@ class GPTContext:
 
         return True
 
-    def Prompt(self, role: str, message: str):
+    def Send(self, _messages: list[dict[str, str]]) -> dict:
+        return dict(openai.ChatCompletion.create(model=self.Model, messages=_messages)["choices"][0]["message"])
+
+    def Prompt(self, role: str, message: str) -> list[dict[str, str]]:
         self.Messages.append(dict({ "role": role, "content": message }))
-        response: dict = openai.ChatCompletion.create(model=self.Model, messages=self.Messages)
-        self.Messages.append(response["choices"][0]["message"])
+        self.Messages.append(self.Send(self.Messages))
 
         return self.Messages
