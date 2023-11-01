@@ -6,8 +6,8 @@ class PromptJob:
         self.GPT: GPTContext = gpt
         pass
 
-    def Run(self) -> Any:
+    def Run(self, args: list[Any] = None) -> Any:
         return
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-        self.Run()
+        self.Run(args)
