@@ -1,6 +1,6 @@
-from typing import Any
-from prompt import PromptJob
-from gptcontext import GPTContext
+from typing import Any, Callable
+from peregrinegpt.prompt import PromptJob
+from peregrinegpt.gptcontext import GPTContext
 import typing
 
 class Pipeline:
@@ -17,16 +17,19 @@ class Pipeline:
 
         return self 
 
-    def CreateJob(self, jobType: type):
-        self.Jobs.append(jobType(self.GPT))
+    def CreateJob(self, jobType: type) -> PromptJob:
+        job: type = jobType(self.GPT)
+        self.Jobs.append(job)
 
-    def Run(self, onError = None) -> bool:
+    def Run(self, onError: Callable[[BaseException], Any] = None) -> bool:
         prevResult: Any = None
 
         for job in self.Jobs:
             try:
                 prevResult = job(prevResult)
+
                 self.Results.append(prevResult)
+
             except Exception as e:
                 if (onError != None):
                     onError(e)

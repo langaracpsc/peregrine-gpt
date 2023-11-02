@@ -1,5 +1,5 @@
 from typing import Any
-from gptcontext import GPTContext
+from peregrinegpt.gptcontext import GPTContext
 
 class PromptJob:
     def __init__(self, gpt: GPTContext):
@@ -10,4 +10,4 @@ class PromptJob:
         return
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
-        self.Run(args)
+        return self.Run(args[0])
