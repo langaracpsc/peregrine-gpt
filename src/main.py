@@ -17,7 +17,6 @@ class ContiguousJob(PromptJob):
         super().__init__(gpt)
 
     def Run(self, args: list[Any] = None) -> Any:
-        # print(args)
         if (args != None):
             print(args[-1]["content"])
 

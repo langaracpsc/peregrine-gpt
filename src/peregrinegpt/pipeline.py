@@ -37,4 +37,6 @@ class Pipeline:
                 return False
 
         return True
-
+    
+    def Save(self, promptFile: str = "prompts.json"):
+        self.GPT.Save(promptFile)
