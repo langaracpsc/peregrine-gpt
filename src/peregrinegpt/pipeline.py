@@ -9,10 +9,7 @@ class Pipeline:
         self.Results: list[Any] = list[Any]()
         self.GPT: GPTContext = gpt
 
-    def AddJob(self, job: PromptJob) -> Any:
-        if (not(issubclass(type(job), PromptJob))):
-            raise TypeError("Job object must be a variant of PromptJob.")
-
+    def AddJob(self, job: Callable[[list[Any]], Any]) -> Any:
         self.Jobs.append(job)
 
         return self 
@@ -40,3 +37,4 @@ class Pipeline:
     
     def Save(self, promptFile: str = "prompts.json"):
         self.GPT.Save(promptFile)
+

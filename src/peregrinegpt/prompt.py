@@ -1,5 +1,6 @@
 from typing import Any
 from peregrinegpt.gptcontext import GPTContext
+from peregrinegpt.web.scraping import DataScraper
 
 class PromptJob:
     def __init__(self, gpt: GPTContext):

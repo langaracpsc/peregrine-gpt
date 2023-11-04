@@ -26,6 +26,7 @@ class GPTContext:
         return True
 
     def Send(self, _messages: list[dict[str, str]]) -> dict:
+        self.Messages.append(_messages)
         return dict(openai.ChatCompletion.create(model=self.Model, messages=_messages)["choices"][0]["message"])
 
     def Prompt(self, role: str, message: str) -> list[dict[str, str]]:
