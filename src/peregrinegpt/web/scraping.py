@@ -33,20 +33,20 @@ class DataScraper:
             raise BaseException("No url provided to scrape")
         
         page: str = FetchPage(url)
-
-
+        
         if (page == None):
             print(f"No page provided to scrape")
             return None
 
         self.Parser.feed(page)
 
-        self.Data.append(self.Parser.Data)
+        for data in self.Parser.Data:
+            self.Data.append(data)
 
         return self.Data
 
     def GetDataStr(self):
-        return str().join(self.Data)
+        return str().join(data for data in self.Data)
 
     def Save(self, outputFile: str) -> bool:
         try:
@@ -57,3 +57,4 @@ class DataScraper:
  
         return True
 
+ 
