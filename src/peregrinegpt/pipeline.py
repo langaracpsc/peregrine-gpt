@@ -26,15 +26,14 @@ class Pipeline:
                 prevResult = job(prevResult)
 
                 self.Results.append(prevResult)
-
             except Exception as e:
                 if (onError != None):
                     onError(e)
-
-                return False
+                raise e
+            
+        print (self.Results)
 
         return True
     
     def Save(self, promptFile: str = "prompts.json"):
         self.GPT.Save(promptFile)
-
