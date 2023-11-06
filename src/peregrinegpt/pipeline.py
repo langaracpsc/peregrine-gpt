@@ -30,8 +30,6 @@ class Pipeline:
                 if (onError != None):
                     onError(e)
                 raise e
-            
-        print (self.Results)
 
         return True
     

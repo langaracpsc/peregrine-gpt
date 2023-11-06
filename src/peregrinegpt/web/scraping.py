@@ -18,6 +18,7 @@ class DataParser(HTMLParser):
         super().__init__(convert_charrefs=convert_charrefs)
         self.Data: list = []
         self.Links: list = []
+
     def handle_data(self, data: str) -> None:
         self.Data.append(data)
         return
