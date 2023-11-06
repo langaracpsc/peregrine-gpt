@@ -55,3 +55,6 @@ class GPTContext:
         self.Messages.append(self.Send(self.Messages))
 
         return self.Messages
+    
+    def Update(self):
+        self.Send(self.Messages)
