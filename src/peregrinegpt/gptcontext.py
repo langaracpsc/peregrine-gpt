@@ -7,7 +7,7 @@ class GPTContext:
     def __init__(self, model: str, apiKey: str, promptFile: str = None):
         self.Model: str = model
         self.APIKey: str = apiKey
-        self.Messages: list[dict[str]] = [ ]
+        self.Messages: list[dict[str]] = []
         openai.api_key = self.APIKey
 
     def LoadMessages(self, promptFile: str = "prompts.json"):
@@ -29,6 +29,7 @@ class GPTContext:
     
     def AddPrompt(self, prompt: dict, onError: Callable[[KeyError], Any] = None) -> bool:
         try:
+    
             ValidatePrompt(prompt)
             self.Messages.append(prompt)
 
@@ -44,6 +45,7 @@ class GPTContext:
     def Send(self, _messages: list[dict[str, str]]) -> dict:
         print(f"Message size: {len(self.Messages)}")
         print(_messages)
+
         if (len(self.Messages) < 1):
             for message in _messages:
                 self.Messages.append(message)

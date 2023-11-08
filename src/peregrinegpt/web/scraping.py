@@ -34,8 +34,8 @@ class DataScraper:
             raise BaseException("No url provided to scrape")
         
         page: str = FetchPage(url)
-        
         if (page == None):
+        
             print(f"No page provided to scrape")
             return None
 

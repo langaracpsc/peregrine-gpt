@@ -88,7 +88,7 @@ def Main(args: list[str]):
     # pipeline.CreateJob(QuestionGenJob)
     # pipeline.CreateJob(AnswerJob)
 
-    pipeline.AddJob(LoadedJob(context, args[0]))
+    # pipeline.AddJob(LoadedJob(context, args[0]))
 
     pipeline.Run()
     # pipeline.Save(args[1])
