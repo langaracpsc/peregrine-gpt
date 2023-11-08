@@ -8,9 +8,9 @@ from peregrinegpt.pipeline import Pipeline
 from peregrinegpt.prompt import PromptJob
 from peregrinegpt.web.scraping import DataScraper
 
-def LoadQuestions(questionFile: str ) -> list[dict[str, str]]:
+def LoadQuestions(questionFile: str) -> list[dict[str, str]]:
     questions: list[dict[str, str]]
-    prompts: list[dict[str, str]] = None
+    prompts: list[dict[str, str]] = []
 
     with open(questionFile, 'r') as fp:
         questions = json.load(fp)["answered"]
@@ -20,7 +20,6 @@ def LoadQuestions(questionFile: str ) -> list[dict[str, str]]:
         prompts.append({"role": "assistant", "content": question["answer"]})
 
     return prompts
-    
 
 class SetupJob(PromptJob):  
     def __init__(self, gpt: GPTContext, rolePrompt: str):
@@ -39,11 +38,12 @@ class SetupJob(PromptJob):
 
         return self.GPT.Prompt("user", f"{scraper.GetDataStr()}\n\nPhrase all the info you got from that blob of text.")
 
+
 class LoadedJob(PromptJob):
     def __init__(self, gpt: GPTContext, promptFile: str):
         super().__init__(gpt)
         self.PromptFile: str = promptFile
-
+    
     def Run(self, args: list[Any] = None) -> Any:
         messages: list[dict] = None
 
@@ -53,7 +53,6 @@ class LoadedJob(PromptJob):
         print("Prompts loaded.")
 
         print(f"Prompt size {len(self.GPT.Messages)}")
-
         return self.GPT.Prompt("user", "How do i access registration?")
 
 class QuestionGenJob(PromptJob):
@@ -75,23 +74,27 @@ class AnswerJob(PromptJob):
         Reply with both type of pairs in a JSON format like so { \"answered\": [JSON LIST OF QUESTIONS WITH ANSWERS], "unanswered": [JSON LIST OF QUESTIONS THAT COULDNT BE ANSWERED] }. 
         Put the reason why you couldnt answer the unanswered questions in their answer field. Reply with the latter json only. 
         """)
-    
+
 
 def Main(args: list[str]):
+    if (len(args) < 1): 
+        print("")
+    
     context: GPTContext = GPTContext("gpt-3.5-turbo-16k", os.getenv("OPENAI_KEY"))
 
     pipeline: Pipeline = Pipeline(context)
 
-    # pipeline.AddJob(LoadedJob(context, args[0]))
-    pipeline.AddJob(SetupJob(context, "You are Peregrine, an advisor at Langara college and a part of the Langara Computer Science Club. You have info on everything a Langara student needs to know and are capable of helping them directly. The students can reach out to you and ask questions about a specific department, or the club, and it's your duty to try and help them as much as possible with the credible information you have on the college. You will chat with students to solve their issues and give them suggestions about their college activities. You will answer in different types of details and formats depending upon the question."))
-    pipeline.CreateJob(QuestionGenJob)
-    pipeline.CreateJob(AnswerJob)
+    # pipeline.AddJob(SetupJob(context, "You are Peregrine, an advisor at Langara college and a part of the Langara Computer Science Club. You have info on everything a Langara student needs to know and are capable of helping them directly. The students can reach out to you and ask questions about a specific department, or the club, and it's your duty to try and help them as much as possible with the credible information you have on the college. You will chat with students to solve their issues and give them suggestions about their college activities. You will answer in different types of details and formats depending upon the question."))
+    # pipeline.CreateJob(QuestionGenJob)
+    # pipeline.CreateJob(AnswerJob)
+
+    pipeline.AddJob(LoadedJob(context, args[0]))
 
     pipeline.Run()
-    pipeline.Save(args[2])
+    # pipeline.Save(args[1])
 
-    with open(args[1], 'w') as fp:
-        fp.write(pipeline.Results[-1][-1]["content"])
+    # with open(args[0], 'w') as fp:
+    #     fp.write(pipeline.Results[-1][-1]["content"])
 
     prompts: list[dict[str, str]] = LoadQuestions(args[1])
 
@@ -99,9 +102,7 @@ def Main(args: list[str]):
         pipeline.GPT.AddPrompt(prompt)
 
     pipeline.GPT.Update()
-
-    # print(pipeline.Results[-1][-1]["content"]) 
-    # print("Results written")
+    pipeline.Save(args[1])
+    print("Updated")
 
 Main(sys.argv[1:])
-
