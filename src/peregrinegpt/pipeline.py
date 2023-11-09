@@ -1,3 +1,4 @@
+from types import FunctionType
 from typing import Any, Callable
 from peregrinegpt.prompt import PromptJob
 from peregrinegpt.gptcontext import GPTContext
@@ -15,25 +16,40 @@ class Pipeline:
 
         return self 
 
-    def CreateJob(self, jobType: type) -> PromptJob:
+    def CreateJob(self, jobType: type) -> Callable[[list[Any], Any]]:
         job: type = jobType(self.GPT)
+
+        if (not(callable(job))):
+            raise TypeError("Job type must be callable.")
+
         self.Jobs.append(job)
 
-    def Run(self, onError: Callable[[BaseException], Any] = None) -> list[dict[str, str]]:
+        return job
+
+    def Run(self, args: list[dict[str, str]] = None, onError: Callable[[BaseException], Any] = None) -> list[dict[str, str]]:
         prevResult: Any = None
 
         for job in self.Jobs:
             try:
                 prevResult = job(prevResult)
-
                 self.Results.append(prevResult)
+
             except Exception as e:
                 if (onError != None):
                     onError(e)
                 raise e
 
         return prevResult
-    
+
     def Save(self, promptFile: str = "prompts.json"):
         self.GPT.Save(promptFile)
+    
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        onError: FunctionType = None
+        
+        if (len(args) > 2):
+            onError = args[1]
+
+        return self.Run(args[0], onError)
+
 

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 from peregrinegpt.gptcontext import GPTContext
 from peregrinegpt.web.scraping import DataScraper
 from types import FunctionType
@@ -19,11 +19,9 @@ class OpenAIFunction:
         pass
 
 class Prompt:
-
     def __init__(self, messages: list[dict[str, str]], functions: list[FunctionType] = None) -> None:
         self.Messages: list[dict[str, str]] = messages
         self.Function: list[FunctionType] = functions
-
 
 class PromptJob:
     def __init__(self, gpt: GPTContext):
