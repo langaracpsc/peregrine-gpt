@@ -11,12 +11,12 @@ class Pipeline:
         self.GPT: GPTContext = gpt
         self.IsRunning: bool = False 
 
-    def AddJob(self, job: Callable[[list[Any]], Any]) -> Any:
+    def AddJob(self, job: Callable[[list[GPTContext, Any]], Any]) -> Any:
         self.Jobs.append(job)
 
         return self 
 
-    def CreateJob(self, jobType: type) -> Callable[[list[Any], Any]]:
+    def CreateJob(self, jobType: type) -> Callable[[GPTContext, Any], Any]:
         job: type = jobType(self.GPT)
 
         if (not(callable(job))):
@@ -31,7 +31,7 @@ class Pipeline:
 
         for job in self.Jobs:
             try:
-                prevResult = job(prevResult)
+                prevResult = job(self.GPT, prevResult)
                 self.Results.append(prevResult)
 
             except Exception as e:

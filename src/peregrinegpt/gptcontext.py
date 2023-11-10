@@ -23,6 +23,7 @@ class GPTContext:
                 
         except:
             print("An error occured in saving messages.")
+            
             return False
 
         return True
@@ -43,7 +44,6 @@ class GPTContext:
 
     def Send(self, _messages: list[dict[str, str]]) -> dict:
         print(f"Message size: {len(self.Messages)}")
-        print(_messages)
 
         if (len(self.Messages) < 1):
             for message in _messages:

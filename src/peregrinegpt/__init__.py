@@ -1,4 +1,4 @@
-from prompt import Prompt, PromptJob
-from gptcontext import GPTContext
-from pipeline import Pipeline
-from chatbot import ChatBot
+from peregrinegpt.prompt import Prompt, PromptJob
+from peregrinegpt.gptcontext import GPTContext
+from peregrinegpt.pipeline import Pipeline
+from peregrinegpt.chatbot import ChatBot
