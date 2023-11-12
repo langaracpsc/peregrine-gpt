@@ -1,5 +1,6 @@
 import sys
 import requests
+import json 
 from typing import Any
 from html.parser import HTMLParser
 
@@ -22,6 +23,56 @@ class DataParser(HTMLParser):
     def handle_data(self, data: str) -> None:
         self.Data.append(data)
         return
+
+class Element:
+    __slots__ = ("Tag", "Attributes", "Children")
+
+    def __init__(self, tag: str, attributes: dict, children: list) -> None:
+        self.Tag = tag
+        self.Attributes = attributes
+        self.Children = children
+
+    def __str__(self) -> str:
+        return json.dumps(dict({"tag": self.Tag, "attr": self.Attributes, "children": [str(child) for child in self.Children]}), indent=2)
+        
+class ElementSeeker(HTMLParser):
+    def __init__(self, *, convert_charrefs: bool = True) -> None:
+        super().__init__(convert_charrefs=convert_charrefs)
+        self.CurrentElement: int = 0
+
+        self.ElementStack: list = []
+        self.SeekedElements: list = []
+        self.ArbData: list = []
+    
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        element = Element(tag, attrs, [])
+
+        if (len(self.ElementStack) > 0):
+            self.ElementStack[self.CurrentElement - 1].Children.append(element)
+    
+        self.ElementStack.append(element)
+        
+        self.CurrentElement += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if (tag == self.SeekElement):  
+            self.SeekedElements.append(self.ElementStack[self.CurrentElement])
+
+        if (self.CurrentElement):
+            self.CurrentElement -= 1
+
+    def handle_data(self, data: str) -> None:
+        if (len(self.ElementStack) > 0):
+            self.ElementStack[self.CurrentElement - 1].Children.append(data)
+        else:
+            self.ArbData.append(data) 
+
+    def Seek(self, html: str, element: str):
+        self.SeekElement: str = element
+        self.feed(html)
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return super().__call__(*args, **kwds)
 
 class DataScraper:
     def __init__(self, url: str = None):
