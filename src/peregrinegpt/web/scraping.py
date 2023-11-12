@@ -70,7 +70,16 @@ class ElementSeeker(HTMLParser):
     def Seek(self, html: str, element: str) -> list[Element]:
         self.SeekElement: str = element
         self.feed(html)
+
         return self.SeekedElements
+    
+    def Reset(self) -> None:
+        self.ArbData.clear()
+        self.ElementStack.clear()
+        self.SeekedElements.clear()
+        self.CurrentElement = 0
+        self.SeekElement = None
+        return super().reset()
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return super().__call__(*args, **kwds)
