@@ -67,9 +67,10 @@ class ElementSeeker(HTMLParser):
         else:
             self.ArbData.append(data) 
 
-    def Seek(self, html: str, element: str):
+    def Seek(self, html: str, element: str) -> list[Element]:
         self.SeekElement: str = element
         self.feed(html)
+        return self.SeekedElements
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return super().__call__(*args, **kwds)
