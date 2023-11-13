@@ -49,21 +49,27 @@ class ElementSeeker(HTMLParser):
 
         if (len(self.ElementStack) > 0):
             self.ElementStack[self.CurrentElement - 1].Children.append(element)
+            self.CurrentElement += 1
     
         self.ElementStack.append(element)
-        
-        self.CurrentElement += 1
 
     def handle_endtag(self, tag: str) -> None:
-        if (tag == self.SeekElement):  
-            self.SeekedElements.append(self.ElementStack[self.CurrentElement])
+        if (tag == self.SeekElement):
+            element = self.ElementStack[self.CurrentElement]
+            if (element.Tag != tag):
+                for child in filter(lambda elem : elem.Tag == tag, filter(lambda child : type(child) == Element, element.Children)):
+                    self.SeekedElements.append(child)
+
+            else:
+                self.SeekElements.append(element)
+            
 
         if (self.CurrentElement):
             self.CurrentElement -= 1
 
     def handle_data(self, data: str) -> None:
         if (len(self.ElementStack) > 0):
-            self.ElementStack[self.CurrentElement - 1].Children.append(data)
+            self.ElementStack[self.CurrentElement].Children.append(data)
         else:
             self.ArbData.append(data) 
 
@@ -79,6 +85,7 @@ class ElementSeeker(HTMLParser):
         self.SeekedElements.clear()
         self.CurrentElement = 0
         self.SeekElement = None
+
         return super().reset()
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
@@ -119,4 +126,3 @@ class DataScraper:
  
         return True
 
- 
