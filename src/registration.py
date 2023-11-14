@@ -8,6 +8,8 @@ from peregrinegpt.pipeline import Pipeline
 from peregrinegpt.prompt import PromptJob
 from peregrinegpt.web.scraping import DataScraper
 
+import concurrent.futures
+
 def LoadQuestions(questionFile: str) -> list[dict[str, str]]:
     questions: list[dict[str, str]]
     prompts: list[dict[str, str]] = []
@@ -78,44 +80,57 @@ class AnswerJob(PromptJob):
         Reply with both type of pairs in a JSON format like so { \"answered\": [JSON LIST OF QUESTIONS WITH ANSWERS], "unanswered": [JSON LIST OF QUESTIONS THAT COULDNT BE ANSWERED] }. 
         Put the reason why you couldnt answer the unanswered questions in their answer field. Reply with the latter json only. """)
 
+def CreatePrompts(link: str, _id: int, outputDir: str, model: str, apiKey: str) -> int:
+    outputPath: str = f"{outputDir}/prompts{_id}.json"
+    
+    if (os.path.exists(outputPath)):
+        return -1 
+
+    context: GPTContext = GPTContext(model, apiKey)
+
+    pipeline: Pipeline = Pipeline(context)
+    pipeline.AddJob(SetupJob(context, link, "You are Peregrine, an advisor at Langara college and a part of the Langara Computer Science Club. You have info on everything a Langara student needs to know and are capable of helping them directly. The students can reach out to you and ask questions about a specific department, or the club, and it's your duty to try and help them as much as possible with the credible information you have on the college. You will chat with students to solve their issues and give them suggestions about their college activities. You will answer in different types of details and formats depending upon the question."))
+    pipeline.CreateJob(QuestionGenJob)
+    pipeline.CreateJob(AnswerJob)
+
+    # pipeline.AddJob(LoadedJob(context,args[0]))
+
+    pipeline.Run()
+    # pipeline.Save(args[1])
+
+    # with open(args[0], 'w') as fp:
+    #     fp.write(pipeline.Results[-1][-1]["content"])
+
+    # prompts: list[dict[str, str]] = LoadQuestions(args[1])
+
+    # for prompt in prompts:
+    #     pipeline.GPT.AddPrompt(prompt)
+
+    # pipeline.GPT.Update()
+    pipeline.Save(outputPath)
+
+    print(f"Prompt {_id} completed")
+    return _id
+
 def Main(args: list[str]):
     if (len(args) < 2): 
         print("Usage: registration.py <links> <output_dir>")
 
     with open(args[0], 'r') as fp:
-        i: int = 0
+        links: list[str] = list(filter(lambda x : len(x) > 1, fp.read().split('\n')))
+ 
+        futures: list[concurrent.futures.Future[bool]] = []
 
-        for link in filter(lambda x : len(x) > 1, fp.read().split('\n')):
-            outputPath: str = f"{args[1]}/prompts{i}.json"
-            
-            if (os.path.exists(outputPath)):
-                continue
-            
-            context: GPTContext = GPTContext("gpt-3.5-turbo-16k", os.getenv("OPENAI_KEY"))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(links)) as executor:
+            futures = { executor.submit(CreatePrompts, links[i], i, args[1], "gpt-3.5-turbo-16k", os.getenv("OPENAI_KEY")): i for i in range(len(links))}
 
-            pipeline: Pipeline = Pipeline(context)
-            pipeline.AddJob(SetupJob(context, link, "You are Peregrine, an advisor at Langara college and a part of the Langara Computer Science Club. You have info on everything a Langara student needs to know and are capable of helping them directly. The students can reach out to you and ask questions about a specific department, or the club, and it's your duty to try and help them as much as possible with the credible information you have on the college. You will chat with students to solve their issues and give them suggestions about their college activities. You will answer in different types of details and formats depending upon the question."))
-            pipeline.CreateJob(QuestionGenJob)
-            pipeline.CreateJob(AnswerJob)
-        
-            # pipeline.AddJob(LoadedJob(context,args[0]))
+            for future in concurrent.futures.as_completed(futures):
+                i = futures[future]
 
-            pipeline.Run()
-            # pipeline.Save(args[1])
+                try:
+                    print(f"{i} status: {'suceeded' if future.result() >= 0 else 'failed'} ")
+                except Exception as e:
+                    print(f"{i} threw an except {e}") 
 
-            # with open(args[0], 'w') as fp:
-            #     fp.write(pipeline.Results[-1][-1]["content"])
-
-            # prompts: list[dict[str, str]] = LoadQuestions(args[1])
-
-            # for prompt in prompts:
-            #     pipeline.GPT.AddPrompt(prompt)
-
-            # pipeline.GPT.Update()
-            pipeline.Save(outputPath)
-
-            i += 1 
-
-            print(f"Prompt {i} completed")
 
 Main(sys.argv[1:])
