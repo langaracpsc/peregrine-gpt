@@ -2,6 +2,9 @@ import os
 import sys
 import json
 
+"""Routines to combine the prompts from different contexts into one contiguous array.
+"""
+
 def ExtractID(file: str):
     i: int = 0
     while (not(file[i].isnumeric())):
