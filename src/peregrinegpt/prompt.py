@@ -19,6 +19,8 @@ class OpenAIFunction:
         pass
 
 class Prompt:
+    __slots__ = ("Messages", "Functions")
+
     def __init__(self, messages: list[dict[str, str]], functions: list[FunctionType] = None) -> None:
         self.Messages: list[dict[str, str]] = messages
         self.Function: list[FunctionType] = functions
